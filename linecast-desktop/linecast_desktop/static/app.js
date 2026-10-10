@@ -11,9 +11,9 @@ const $ = (sel, root = document) => root.querySelector(sel);
 const params = new URLSearchParams(window.location.search);
 const SVGNS = "http://www.w3.org/2000/svg";
 
-const REFRESH = { weather: 600, sunshine: 60, moon: 300, tides: 600, sky: 120 };
-const ART_REFRESH = { radar: 300, weather: 600, sunshine: 60, moon: 300, sky: 120, tides: 600, maps: 3600 };
-const VIEW_APPS = { weather: ["weather"], sun: ["sunshine"], moon: ["moon"], tides: ["tides"], sky: ["sky"], art: [] };
+const REFRESH = { weather: 600, sunshine: 60, moon: 300, sky: 120 };
+const ART_REFRESH = { radar: 300, weather: 600, sunshine: 60, moon: 300, sky: 120, maps: 3600 };
+const VIEW_APPS = { weather: ["weather"], sun: ["sunshine"], moon: ["moon"], sky: ["sky"], art: [] };
 const RENDER = {};
 
 const state = {
@@ -113,7 +113,7 @@ function localNow(app) {
 }
 
 function anyLocalNow() {
-  for (const app of ["sunshine", "moon", "sky", "weather", "tides"]) {
+  for (const app of ["sunshine", "moon", "sky", "weather"]) {
     const t = localNow(app);
     if (t != null) return t;
   }
@@ -169,7 +169,7 @@ async function api(path, extra = {}) {
   return { data: body, stale: res.headers.get("X-Linecast-Stale") === "1" };
 }
 
-const CARD_FOR = { weather: "weather", sunshine: "sun", moon: "moon", tides: "tides", sky: "sky" };
+const CARD_FOR = { weather: "weather", sunshine: "sun", moon: "moon", sky: "sky" };
 
 function body(card) { return $(`#card-${card} .body`); }
 
@@ -231,7 +231,7 @@ function draw(app) {
 
 function updateHeader() {
   const p = state.payloads.sunshine || state.payloads.moon || state.payloads.weather ||
-            state.payloads.tides || state.payloads.sky;
+            state.payloads.sky;
   if (p) {
     const loc = typeof p.location === "object" && p.location ? p.location.name : p.location;
     $("#place-name").textContent = loc || "Your location";
@@ -600,119 +600,6 @@ function moonDisc(illumPct, waxing, southern, r) {
   return root;
 }
 
-/* ---------- tides ---------- */
-
-RENDER.tides = (p, root) => {
-  root.replaceChildren();
-  if (!p.station || !(p.series || []).length) {
-    root.append(el("p", { class: "status", text: "No tide station near this location. Try a coastal place." }));
-    return;
-  }
-  const unit = (p.units || {}).height || "";
-  const head = el("div", { class: "facts" });
-  head.append(el("span", {}, "Station ", el("b", { text: p.station })));
-  if (p.now_height != null) head.append(el("span", {}, "Water now ", el("b", { text: `${num(p.now_height, 2)} ${unit}` })));
-  root.append(head);
-
-  const holder = el("div");
-  root.append(holder);
-  tideChart(holder, p, unit);
-
-  const list = el("div", { class: "tide-events" });
-  for (const e of (p.events || []).slice(0, 4)) {
-    list.append(el("div", { class: "tide-event" },
-      el("div", { class: "k", text: (e.kind === "high" ? "High tide" : "Low tide") }),
-      el("div", { class: "v tabular", text: `${fmtDayTime(e.time)} · ${num(e.height, 2)} ${unit}` })));
-  }
-  root.append(list);
-  if (p.source) root.append(el("p", { class: "muted small", text: `Predictions: ${p.source}` }));
-};
-
-function tideChart(holder, p, unit) {
-  const W = Math.max(280, holder.clientWidth || 600);
-  const L = 40, R = 14, T = 22, plotH = 150, axisH = 20, floor = 20;
-  const H = T + plotH + axisH;
-  const pts = p.series.map((s) => ({ t: parseLocal(s.time), h: s.height })).filter((s) => s.t != null);
-  if (pts.length < 2) return;
-  const t0 = pts[0].t, t1 = pts[pts.length - 1].t;
-  const heights = pts.map((s) => s.h);
-  const lo = Math.min(...heights), hi = Math.max(...heights);
-  const ticks = niceTicks(lo, hi, 3);
-  const yLo = Math.min(lo, ticks[0]), yHi = Math.max(hi, ticks[ticks.length - 1]);
-  const x = (t) => L + ((t - t0) / (t1 - t0)) * (W - L - R);
-  // The lowest water sits a label's height above the axis, so a low
-  // tide's time never lands on the hour labels.
-  const y = (h) => T + plotH - floor - ((h - yLo) / (yHi - yLo || 1)) * (plotH - floor);
-
-  const root = svg("svg", { class: "chart", width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: "img",
-    "aria-label": `Tide height at ${p.station} from ${fmt.dayTime.format(t0)} to ${fmt.dayTime.format(t1)}` });
-  for (const v of ticks) {
-    svg("line", { class: "grid-line", x1: L, x2: W - R, y1: y(v), y2: y(v) }, root);
-    svgText(root, L - 6, y(v) + 4, `${num(v, 1)}`, { "text-anchor": "end" });
-  }
-  svgText(root, L - 6, T - 8, unit, { "text-anchor": "end" });
-
-  const line = pts.map((s, i) => `${i ? "L" : "M"}${x(s.t).toFixed(1)},${y(s.h).toFixed(1)}`).join("");
-  svg("path", { class: "area-water", d: `${line}L${x(t1)},${T + plotH}L${x(t0)},${T + plotH}Z` }, root);
-  svg("path", { class: "line-water", d: line }, root);
-
-  // Hours along the bottom: every three, or six on a narrow chart
-  const HOUR = 3600000;
-  const every = (x(t0 + 3 * HOUR) - x(t0)) < 48 ? 6 : 3;
-  const first = Math.ceil(t0 / (every * HOUR)) * every * HOUR;
-  for (let t = first; t <= t1; t += every * HOUR) {
-    svgText(root, x(t), H - 4, fmt.hour.format(t), { "text-anchor": "middle" });
-  }
-
-  const now = localNow("tides");
-  if (now != null && now >= t0 && now <= t1) {
-    svg("line", { class: "now-line", x1: x(now), x2: x(now), y1: T - 4, y2: T + plotH }, root);
-    // A high tide's time sits above the chart too; drop "now" to the
-    // bottom of the plot when the two would touch.
-    const crowded = (p.events || []).some((e) => {
-      const t = parseLocal(e.time);
-      return e.kind === "high" && t != null && t >= t0 && t <= t1 && Math.abs(x(t) - x(now)) < 44;
-    });
-    svgText(root, x(now) + (crowded ? 4 : 0), crowded ? T + plotH - 4 : T - 8, "now",
-      { "text-anchor": crowded ? "start" : "middle", class: "label-strong" });
-  }
-
-  for (const e of p.events || []) {
-    const t = parseLocal(e.time);
-    if (t == null || t < t0 || t > t1) continue;
-    const cy = y(e.height);
-    svg("circle", { class: "dot", cx: x(t), cy, r: 4, fill: cssVar("--water") }, root);
-    const above = e.kind === "high";
-    svgText(root, x(t), cy + (above ? -9 : 17), fmtTime(e.time), {
-      "text-anchor": x(t) < L + 30 ? "start" : x(t) > W - R - 30 ? "end" : "middle" });
-  }
-
-  const cross = svg("line", { class: "crosshair", y1: T, y2: T + plotH, visibility: "hidden" }, root);
-  const dot = svg("circle", { class: "dot", r: 4.5, fill: cssVar("--water"), visibility: "hidden" }, root);
-  const hit = svg("rect", { x: L, y: 0, width: W - L - R, height: H, fill: "transparent" }, root);
-  const move = (ev) => {
-    const box = root.getBoundingClientRect();
-    const px = (ev.clientX - box.left) * (W / box.width);
-    let best = 0;
-    for (let i = 1; i < pts.length; i++) {
-      if (Math.abs(x(pts[i].t) - px) < Math.abs(x(pts[best].t) - px)) best = i;
-    }
-    const s = pts[best];
-    cross.setAttribute("x1", x(s.t)); cross.setAttribute("x2", x(s.t));
-    cross.setAttribute("visibility", "visible");
-    dot.setAttribute("cx", x(s.t)); dot.setAttribute("cy", y(s.h));
-    dot.setAttribute("visibility", "visible");
-    showTip(ev.clientX, ev.clientY, fmt.dayTime.format(s.t),
-      [{ label: "Tide height", value: `${num(s.h, 2)} ${unit}`, color: cssVar("--water") }]);
-  };
-  hit.addEventListener("pointermove", move);
-  hit.addEventListener("pointerdown", move);
-  hit.addEventListener("pointerleave", () => {
-    cross.setAttribute("visibility", "hidden"); dot.setAttribute("visibility", "hidden"); hideTip();
-  });
-  holder.replaceChildren(root);
-}
-
 /* ---------- sky ---------- */
 
 const PLANET = { mercury: "Mercury", venus: "Venus", mars: "Mars", jupiter: "Jupiter",
@@ -898,7 +785,7 @@ function redrawAll() {
 function appsToLoad() {
   const view = params.get("view");
   if (view && VIEW_APPS[view]) return VIEW_APPS[view];
-  return ["sunshine", "moon", "sky", "tides", "weather"];
+  return ["sunshine", "moon", "sky", "weather"];
 }
 
 function start() {
@@ -913,6 +800,7 @@ function start() {
 
 function init() {
   applyTheme(params.get("theme") || load("theme"));
+  if (!(state.artApp in ART_REFRESH)) state.artApp = "radar";
   const view = params.get("view");
   if (view && VIEW_APPS[view]) {
     document.body.classList.add("single");
@@ -955,7 +843,7 @@ function init() {
 
   // Keep the clock and the "now" markers moving between refreshes.
   setInterval(updateHeader, 15000);
-  setInterval(() => { for (const app of ["sunshine", "tides"]) draw(app); }, 60000);
+  setInterval(() => draw("sunshine"), 60000);
 
   api("/api/config").then(({ data }) => {
     $("#versions").textContent = `linecast ${data.linecast} · linecast desktop ${data.version}`;

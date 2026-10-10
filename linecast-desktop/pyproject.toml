@@ -1,7 +1,7 @@
 [project]
 name = "linecast-desktop"
 version = "0.1.0"
-description = "A desktop window and Home Assistant feed for linecast's weather, sun, moon, tides and sky."
+description = "A desktop window and Home Assistant feed for linecast's weather, sun, moon and sky."
 readme = "README.md"
 license = "MIT"
 requires-python = ">=3.10"

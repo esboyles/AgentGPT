@@ -7,7 +7,7 @@
 # your home network). Over https, such as through Nabu Casa, the browser
 # blocks them; use the sensor card there instead.
 
-# ---- One card from the dashboard: weather, sun, moon, tides, sky or art ----
+# ---- One card from the dashboard: weather, sun, moon, sky or art ----
 type: iframe
 url: http://192.168.1.50:8765/?view=weather&bare=1
 aspect_ratio: 120%
@@ -39,6 +39,3 @@ entities:
     name: Moon
   - entity: sensor.linecast_moon_illumination
     name: Moon lit
-  - entity: sensor.linecast_next_tide
-    name: Next tide
-    format: time

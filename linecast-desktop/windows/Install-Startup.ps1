@@ -36,6 +36,6 @@ $shortcut.TargetPath = $bat
 $shortcut.Arguments = $Arguments
 $shortcut.WorkingDirectory = $PSScriptRoot
 $shortcut.WindowStyle = 7   # minimized
-$shortcut.Description = 'linecast desktop: weather, sun, moon, tides and sky'
+$shortcut.Description = 'linecast desktop: weather, sun, moon and sky'
 $shortcut.Save()
 "linecast desktop will start when you sign in. Shortcut: $link"

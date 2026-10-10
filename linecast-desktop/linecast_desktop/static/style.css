@@ -125,6 +125,8 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 }
 .span-2 { grid-column: span 2; }
 .span-3 { grid-column: span 3; }
+/* The weather card runs down beside the sun and moon cards. */
+.tall { grid-row: span 2; }
 .status { color: var(--ink-2); margin: 8px 0; }
 .status.error { color: var(--ink); }
 .status.error::before { content: "⚠ "; color: var(--critical); }
@@ -135,7 +137,9 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 
 @media (max-width: 1100px) {
   .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .span-3, .art-card { grid-column: span 2; }
+  .span-3 { grid-column: span 2; }
+  .art-card { grid-column: auto; }
+  .tall { grid-row: auto; }
 }
 @media (max-width: 720px) {
   .grid { grid-template-columns: minmax(0, 1fr); padding: 12px 16px; }
@@ -176,8 +180,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .chart .crosshair { stroke: var(--ink-3); stroke-width: 1; shape-rendering: crispEdges; }
 .chart .line-temp { fill: none; stroke: var(--temp); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
 .chart .area-temp { fill: var(--temp); opacity: .1; }
-.chart .line-water { fill: none; stroke: var(--water); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-.chart .area-water { fill: var(--water); opacity: .1; }
 .chart .bar-precip { fill: var(--water); }
 .chart .dot { stroke: var(--surface); stroke-width: 2; }
 .chart .now-line { stroke: var(--ink-2); stroke-width: 1; }
@@ -202,14 +204,6 @@ button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); ou
 .moon-wrap svg { width: 132px; height: 132px; flex: none; }
 .moon-wrap .kv { margin: 0; }
 .phase-name { font-size: 20px; font-weight: 600; }
-
-/* Tide list */
-.tide-events { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
-.tide-event {
-  background: var(--surface-2); border-radius: 10px; padding: 6px 12px; min-width: 120px;
-}
-.tide-event .k { font-size: 12px; color: var(--ink-2); }
-.tide-event .v { font-weight: 600; }
 
 /* Sky list */
 .sky-list { list-style: none; padding: 0; margin: 8px 0 0; columns: 2; column-gap: 18px; }
@@ -260,7 +254,7 @@ body.bare.single .art-frame { height: calc(100vh - 70px); }
 body.transparent, body.transparent .card { background: transparent; }
 
 @media (forced-colors: active) {
-  .chart .line-temp, .chart .line-water { stroke: CanvasText; }
+  .chart .line-temp { stroke: CanvasText; }
   .chart .bar-precip { fill: CanvasText; }
 }
 

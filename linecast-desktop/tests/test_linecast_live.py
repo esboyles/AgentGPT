@@ -1,7 +1,6 @@
-"""Runs the real linecast. These use only what linecast computes or
-bundles itself (the moon, the sun, and tides at a bundled gauge), so
-they need no network beyond what linecast's location lookup skips when
-given coordinates."""
+"""Runs the real linecast. These use only what linecast computes itself
+(the moon and the sun), so they need no network: given coordinates,
+linecast skips its location lookup."""
 
 import importlib.util
 
@@ -26,10 +25,10 @@ def test_moon_json_from_real_linecast():
     assert 0 <= data["illumination"] <= 100
 
 
-def test_tides_json_at_a_bundled_gauge():
-    data, _ = service().data("tides")
-    assert data["station"]
-    assert data["events"] and data["series"]
+def test_sunshine_json_from_real_linecast():
+    data, _ = service().data("sunshine")
+    assert data["sunrise"] and data["sunset"]
+    assert data["day_length_seconds"] > 0
 
 
 def test_colored_frame_from_real_linecast():
@@ -42,4 +41,4 @@ def test_summary_from_real_linecast():
     out = service().summary()
     assert out["moon"]["phase"]
     assert out["sun"]["sunrise"]
-    assert out["tide"]["station"]
+    assert "tide" not in out

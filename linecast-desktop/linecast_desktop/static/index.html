@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>linecast desktop</title>
-<meta name="description" content="Weather, sun, moon, tides and sky from linecast.">
+<meta name="description" content="Weather, sun, moon and sky from linecast.">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="style.css">
 </head>
@@ -29,7 +29,7 @@
 </header>
 
 <main class="grid" id="grid">
-  <section class="card span-2" id="card-weather" data-view="weather" aria-labelledby="h-weather">
+  <section class="card span-2 tall" id="card-weather" data-view="weather" aria-labelledby="h-weather">
     <h2 id="h-weather">Weather</h2>
     <div class="body"><p class="status">Loading…</p></div>
   </section>
@@ -41,11 +41,6 @@
 
   <section class="card" id="card-moon" data-view="moon" aria-labelledby="h-moon">
     <h2 id="h-moon">Moon</h2>
-    <div class="body"><p class="status">Loading…</p></div>
-  </section>
-
-  <section class="card span-2" id="card-tides" data-view="tides" aria-labelledby="h-tides">
-    <h2 id="h-tides">Tides</h2>
     <div class="body"><p class="status">Loading…</p></div>
   </section>
 
@@ -63,7 +58,6 @@
         <button role="tab" data-app="sunshine">Sunshine</button>
         <button role="tab" data-app="moon">Moon</button>
         <button role="tab" data-app="sky">Sky</button>
-        <button role="tab" data-app="tides">Tides</button>
         <button role="tab" data-app="maps">Map</button>
       </div>
     </div>

@@ -8,9 +8,9 @@ linecast itself.
 Routes:
     /                    the dashboard (``?view=moon`` etc. for one card)
     /api/<app>           linecast's ``--json`` payload for weather,
-                         sunshine, moon, sky or tides
-    /api/art/<app>       one colored ``--print`` frame as HTML, for any of
-                         the seven apps, sized by ``cols`` and ``rows``
+                         sunshine, moon or sky
+    /api/art/<app>       one colored ``--print`` frame as HTML, sized by
+                         ``cols`` and ``rows``
     /api/summary         flat values for Home Assistant REST sensors
     /api/config          the server's settings, for the page
     /api/health          a liveness check
@@ -34,15 +34,15 @@ import webbrowser
 from linecast_desktop import __version__
 from linecast_desktop.ansi import ansi_to_html
 
-JSON_APPS = ("weather", "sunshine", "moon", "sky", "tides")
-ART_APPS = ("weather", "sunshine", "moon", "sky", "tides", "radar", "maps")
-UNIT_APPS = ("weather", "tides", "radar", "maps")
+JSON_APPS = ("weather", "sunshine", "moon", "sky")
+ART_APPS = ("weather", "sunshine", "moon", "sky", "radar", "maps")
+UNIT_APPS = ("weather", "radar", "maps")
 
-# Seconds a result stays fresh. Weather and tides change slowly and come
-# from rate-limited public services; the sun and sky move by the minute.
-JSON_TTL = {"weather": 600, "tides": 600, "sunshine": 60, "moon": 300, "sky": 60}
-ART_TTL = {"weather": 600, "tides": 600, "sunshine": 60, "moon": 300,
-           "sky": 120, "radar": 300, "maps": 3600}
+# Seconds a result stays fresh. Weather changes slowly and comes from
+# rate-limited public services; the sun and sky move by the minute.
+JSON_TTL = {"weather": 600, "sunshine": 60, "moon": 300, "sky": 60}
+ART_TTL = {"weather": 600, "sunshine": 60, "moon": 300, "sky": 120,
+           "radar": 300, "maps": 3600}
 
 RUN_TIMEOUT = 120
 MAX_LOCATION = 100
@@ -209,18 +209,17 @@ class LinecastService:
         out = {"location": None, "updated": datetime.now().astimezone().isoformat(
             timespec="seconds"), "errors": {}}
         payloads = {}
-        for app in ("weather", "sunshine", "moon", "tides"):
+        for app in ("weather", "sunshine", "moon"):
             try:
                 payloads[app], _stale = self.data(app, location)
             except LinecastError as exc:
                 out["errors"][app] = str(exc)
-        for app in ("weather", "sunshine", "moon", "tides"):
+        for app in ("weather", "sunshine", "moon"):
             if out["location"] is None and app in payloads:
                 out["location"] = payloads[app].get("location") or None
         out["weather"] = _weather_summary(payloads.get("weather"))
         out["sun"] = _sun_summary(payloads.get("sunshine"))
         out["moon"] = _moon_summary(payloads.get("moon"))
-        out["tide"] = _tide_summary(payloads.get("tides"))
         return out
 
 
@@ -307,29 +306,6 @@ def _moon_summary(p):
         "next_rise": aware(rise, tz),
         "next_set": aware(moonset, tz),
         "up": p.get("up_now"),
-    }
-
-
-def _tide_summary(p):
-    if not p or not p.get("events"):
-        return None
-    tz = p.get("timezone")
-    events = p.get("events") or []
-    first = events[0]
-    nxt_high = next((e for e in events if e.get("kind") == "high"), None)
-    nxt_low = next((e for e in events if e.get("kind") == "low"), None)
-    return {
-        "station": p.get("station"),
-        "now_height": p.get("now_height"),
-        "unit": (p.get("units") or {}).get("height"),
-        "next": first.get("kind"),
-        "next_time": aware(first.get("time"), tz),
-        "next_height": first.get("height"),
-        "next_high_time": aware(nxt_high.get("time"), tz) if nxt_high else None,
-        "next_high_height": nxt_high.get("height") if nxt_high else None,
-        "next_low_time": aware(nxt_low.get("time"), tz) if nxt_low else None,
-        "next_low_height": nxt_low.get("height") if nxt_low else None,
-        "rising": first.get("kind") == "high",
     }
 
 
@@ -503,7 +479,7 @@ def parse_args(argv=None):
     p.add_argument("--open", action="store_true",
                    help="open the dashboard in its own window once the server is up")
     p.add_argument("--view", default=None,
-                   help="with --open, show one card: weather, sun, moon, tides, sky or art")
+                   help="with --open, show one card: weather, sun, moon, sky or art")
     p.add_argument("--version", action="version", version="%(prog)s " + __version__)
     args = p.parse_args(argv)
     if args.units is None:

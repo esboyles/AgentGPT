@@ -1,20 +1,19 @@
 # linecast desktop
 
 A desktop window, and a Home Assistant feed, for
-[linecast](https://github.com/ashuttl/linecast): weather, the sun, the moon,
-tides and the sky, drawn as a proper graphical dashboard instead of in a
-terminal.
+[linecast](https://github.com/ashuttl/linecast): weather, the sun, the moon
+and the sky, drawn as a proper graphical dashboard instead of in a terminal.
 
 linecast itself does all the work: it fetches the forecasts and computes the
-sun, moon, sky and tides. linecast desktop is a small local web server that
+sun, moon and sky. linecast desktop is a small local web server that
 runs linecast for its `--json` data and its colored drawings, then shows them
 in a window. It uses only the Python standard library besides linecast.
 
 What you get:
 
 - **A dashboard** with the current weather, an hourly chart and a seven-day
-  outlook, the sun's path today, the moon's phase, a tide chart, and a map of
-  the sky overhead. Hover over a chart for exact values.
+  outlook, the sun's path today, the moon's phase, and a map of the sky
+  overhead. Hover over a chart for exact values.
 - **linecast's own drawings**, including radar and maps, shown in color in a
   panel of their own.
 - **Single-card windows**, such as just the moon, for a small widget-style
@@ -67,7 +66,7 @@ it with `-Remove` to undo it.
   also use the menu's **Apps**, then **Install this site as an app**, to add it
   to the Start menu.
 - **One card as a small widget window.** Start with `--view moon`, or `sun`,
-  `weather`, `tides`, `sky` or `art`. Add `&bare=1` to the address to hide the
+  `weather`, `sky` or `art`. Add `&bare=1` to the address to hide the
   header.
 - **As your wallpaper.** The free [Lively Wallpaper](https://www.rocksdanister.com/lively/)
   app can show a web page as a live wallpaper. Give it the address
@@ -95,7 +94,7 @@ be on and linecast desktop running.
 3. **Sensors.** Copy `homeassistant/linecast.yaml` to Home Assistant's
    `config/packages/` folder, replace the address in it, and restart Home
    Assistant. This adds sensors for temperature, conditions, sunrise and
-   sunset, moon phase, the next tide and more, all from one request every five
+   sunset, moon phase and more, all from one request every five
    minutes.
 
 4. **Cards.** `homeassistant/dashboard-cards.yaml` has cards to paste into a
@@ -112,7 +111,7 @@ there.
 | Option | What it does |
 | --- | --- |
 | `--location PLACE` | A place name or `lat,lon`. |
-| `--metric`, `--imperial` | Units for weather and tides. |
+| `--metric`, `--imperial` | Units for weather, radar and maps. |
 | `--lang CODE` | linecast's display language, such as `fr` or `ja`. |
 | `--lan` | Listen on your network too, for Home Assistant. |
 | `--port N` | The port to use. The default is 8765. |
@@ -128,8 +127,8 @@ The same settings can come from the environment variables
 | Address | Shows |
 | --- | --- |
 | `/` | The whole dashboard. |
-| `/?view=moon` | One card: `weather`, `sun`, `moon`, `tides`, `sky` or `art`. |
-| `/?view=art&app=radar` | One of linecast's drawings: `radar`, `weather`, `sunshine`, `moon`, `sky`, `tides` or `maps`. |
+| `/?view=moon` | One card: `weather`, `sun`, `moon`, `sky` or `art`. |
+| `/?view=art&app=radar` | One of linecast's drawings: `radar`, `weather`, `sunshine`, `moon`, `sky` or `maps`. |
 | `&bare=1` | Hides the header and footer. |
 | `&theme=dark` | Forces the dark or light theme. |
 | `&location=Reykjavik` | Overrides the place for this page. |
@@ -139,14 +138,14 @@ The same settings can come from the environment variables
 | Address | Returns |
 | --- | --- |
 | `/api/summary` | Flat values for Home Assistant. |
-| `/api/weather`, `/api/sunshine`, `/api/moon`, `/api/tides`, `/api/sky` | linecast's own `--json` output. |
+| `/api/weather`, `/api/sunshine`, `/api/moon`, `/api/sky` | linecast's own `--json` output. |
 | `/api/art/<app>?cols=100&rows=30` | One colored linecast drawing as HTML. |
 
 ## How it works
 
 Each request runs `python -m linecast <app> --json` or `--print`, with no
-shell, and caches the result: ten minutes for weather and tides, one to five
-minutes for the sun, moon and sky. If a refresh fails, the last good result is
+shell, and caches the result: ten minutes for weather, one to five minutes
+for the sun, moon and sky. If a refresh fails, the last good result is
 shown with a "last good data" tag. By default the server listens only on this
 computer. `--lan` opens it to your network. It serves only its own files and
 linecast's output, and passes a requested place to linecast as a single
@@ -163,6 +162,6 @@ uv run --with pytest python -m pytest
 uv run linecast-desktop --open
 ```
 
-The tests run the real linecast for the moon, sun and tides, which work
-without network access. Weather, radar and maps need linecast's public data
+The tests run the real linecast for the moon and sun, which work without
+network access. Weather, radar and maps need linecast's public data
 sources to be reachable.

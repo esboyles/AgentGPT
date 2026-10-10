@@ -111,27 +111,3 @@ rest:
         unique_id: linecast_next_full_moon
         value_template: "{{ value_json.moon.next_full if value_json.moon else none }}"
         device_class: date
-
-      # ---- Tides (empty away from the coast) ----
-      - name: "linecast next tide"
-        unique_id: linecast_next_tide
-        value_template: "{{ value_json.tide.next_time if value_json.tide else none }}"
-        device_class: timestamp
-        json_attributes_path: "$.tide"
-        json_attributes:
-          - station
-          - next
-          - next_height
-          - unit
-          - rising
-          - next_high_time
-          - next_high_height
-          - next_low_time
-          - next_low_height
-      # Tide heights are in metres; use "ft" here if you start with --imperial.
-      - name: "linecast tide height"
-        unique_id: linecast_tide_height
-        value_template: "{{ value_json.tide.now_height if value_json.tide else none }}"
-        icon: mdi:waves
-        state_class: measurement
-        unit_of_measurement: "m"

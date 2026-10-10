@@ -21,13 +21,12 @@ SUN = {"schema": 1, "location": "Brest, Brittany", "timezone": "Europe/Paris",
        "day_length_seconds": 40020, "day_length_delta_seconds": -190,
        "next_event": {"kind": "sunset", "time": "2026-10-10T19:28"},
        "elevation_deg": 26.9, "polar": None}
-TIDES = {"schema": 1, "location": "Brest, Brittany", "timezone": "Europe/Paris",
-         "fetched_at": "2026-10-10T15:44", "station": "Brest, Brittany",
-         "units": {"height": "m"},
-         "events": [{"kind": "high", "time": "2026-10-10T17:42", "height": 6.82},
-                    {"kind": "low", "time": "2026-10-11T00:03", "height": 0.78}],
-         "series": [{"time": "2026-10-10T15:30", "height": 5.9}], "now_height": 6.0,
-         "station_id": "x", "source": "TICON-4"}
+WEATHER = {"schema": 1, "location": "Brest, Brittany", "timezone": "Europe/Paris",
+           "fetched_at": "2026-10-10T15:44", "units": {"temperature": "°F", "wind": "mph"},
+           "current": {"temperature": 58.1, "feels_like": 55.0, "condition": "Overcast",
+                       "humidity": 81, "wind_speed": 12},
+           "today": {"high": 61, "low": 50, "precipitation_probability": 40},
+           "alerts": [], "summary": "Cooler tomorrow."}
 
 
 class FakeRunner:
@@ -44,7 +43,7 @@ class FakeRunner:
             raise srv.LinecastError("Could not fetch %s data." % app)
         if art:
             return "\x1b[38;2;0;128;255m%s\x1b[0m\n" % app
-        return json.dumps({"moon": MOON, "sunshine": SUN, "tides": TIDES,
+        return json.dumps({"moon": MOON, "sunshine": SUN, "weather": WEATHER,
                            "sky": {"schema_version": 1}}[app])
 
 
@@ -128,16 +127,20 @@ def test_unknown_app_is_404(running):
     base, runner = running()
     status, _h, _d = get_json(base + "/api/radar")  # radar has no JSON
     assert status == 404
+    status, _h, _d = get_json(base + "/api/tides")  # left out on purpose
+    assert status == 404
+    status, _h, _d = get_json(base + "/api/art/tides")
+    assert status == 404
     status, _h, _d = get_json(base + "/api/art/nope")
     assert status == 404
     assert runner.calls == []
 
 
 def test_linecast_failure_is_a_502_with_its_message(running):
-    base, _ = running(fail={"tides"})
-    status, _h, data = get_json(base + "/api/tides")
+    base, _ = running(fail={"weather"})
+    status, _h, data = get_json(base + "/api/weather")
     assert status == 502
-    assert "Could not fetch tides" in data["error"]
+    assert "Could not fetch weather" in data["error"]
 
 
 def test_art_is_html_and_sized_within_bounds(running):
@@ -154,10 +157,10 @@ def test_art_is_html_and_sized_within_bounds(running):
 def test_units_only_reach_commands_that_take_them(running):
     base, runner = running(units="metric")
     get_json(base + "/api/moon")
-    get_json(base + "/api/tides")
-    moon_cmd, tides_cmd = runner.calls[0][0], runner.calls[1][0]
+    get_json(base + "/api/weather")
+    moon_cmd, weather_cmd = runner.calls[0][0], runner.calls[1][0]
     assert "--metric" not in moon_cmd
-    assert "--metric" in tides_cmd
+    assert "--metric" in weather_cmd
 
 
 def test_summary_flattens_for_home_assistant(running):
@@ -172,9 +175,17 @@ def test_summary_flattens_for_home_assistant(running):
     # Times carry their UTC offset so Home Assistant can use them as timestamps
     assert data["sun"]["sunset"] == "2026-10-10T19:28:00+02:00"
     assert data["sun"]["day_length_minutes"] == 667.0
-    assert data["tide"]["next"] == "high"
-    assert data["tide"]["next_time"] == "2026-10-10T17:42:00+02:00"
-    assert data["tide"]["next_low_height"] == 0.78
+    assert "tide" not in data
+
+
+def test_summary_carries_weather_when_it_answers(running):
+    base, runner = running()
+    status, _h, data = get_json(base + "/api/summary")
+    assert status == 200 and data["errors"] == {}
+    assert data["weather"]["temperature"] == 58.1
+    assert data["weather"]["high"] == 61
+    assert data["weather"]["unit_temperature"] == "°F"
+    assert sorted(cmd[3] for cmd, _ in runner.calls) == ["moon", "sunshine", "weather"]
 
 
 def test_failed_refresh_serves_last_good_value_marked_stale():
