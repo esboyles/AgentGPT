@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>linecast desktop</title>
+<meta name="description" content="Weather, sun, moon, tides and sky from linecast.">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar" id="topbar">
+  <div class="brand">
+    <img src="icon.svg" alt="" width="22" height="22">
+    <span>linecast</span>
+  </div>
+  <div class="place">
+    <span id="place-name" class="place-name">Finding your location…</span>
+    <span id="place-clock" class="muted tabular"></span>
+  </div>
+  <form id="place-form" class="place-form" autocomplete="off">
+    <label class="sr-only" for="place-input">Location</label>
+    <input id="place-input" type="text" maxlength="100"
+           placeholder="Place or lat,lon (blank for default)">
+    <button type="submit">Go</button>
+  </form>
+  <button id="theme-toggle" class="icon-button" type="button"
+          aria-label="Switch light or dark theme" title="Switch light or dark theme">◐</button>
+</header>
+
+<main class="grid" id="grid">
+  <section class="card span-2" id="card-weather" data-view="weather" aria-labelledby="h-weather">
+    <h2 id="h-weather">Weather</h2>
+    <div class="body"><p class="status">Loading…</p></div>
+  </section>
+
+  <section class="card" id="card-sun" data-view="sun" aria-labelledby="h-sun">
+    <h2 id="h-sun">Sun</h2>
+    <div class="body"><p class="status">Loading…</p></div>
+  </section>
+
+  <section class="card" id="card-moon" data-view="moon" aria-labelledby="h-moon">
+    <h2 id="h-moon">Moon</h2>
+    <div class="body"><p class="status">Loading…</p></div>
+  </section>
+
+  <section class="card span-2" id="card-tides" data-view="tides" aria-labelledby="h-tides">
+    <h2 id="h-tides">Tides</h2>
+    <div class="body"><p class="status">Loading…</p></div>
+  </section>
+
+  <section class="card" id="card-sky" data-view="sky" aria-labelledby="h-sky">
+    <h2 id="h-sky">Sky now</h2>
+    <div class="body"><p class="status">Loading…</p></div>
+  </section>
+
+  <section class="card span-2 art-card" id="card-art" data-view="art" aria-labelledby="h-art">
+    <div class="art-head">
+      <h2 id="h-art">linecast's own drawings</h2>
+      <div class="tabs" role="tablist" aria-label="Which drawing">
+        <button role="tab" data-app="radar">Radar</button>
+        <button role="tab" data-app="weather">Weather</button>
+        <button role="tab" data-app="sunshine">Sunshine</button>
+        <button role="tab" data-app="moon">Moon</button>
+        <button role="tab" data-app="sky">Sky</button>
+        <button role="tab" data-app="tides">Tides</button>
+        <button role="tab" data-app="maps">Map</button>
+      </div>
+    </div>
+    <div class="art-frame" id="art-frame">
+      <pre class="art" id="art" aria-live="polite"></pre>
+    </div>
+    <p class="muted small" id="art-note"></p>
+  </section>
+</main>
+
+<footer class="footer muted small" id="footer">
+  Data and drawings by <a href="https://github.com/ashuttl/linecast" target="_blank" rel="noopener">linecast</a>
+  from free public sources. <span id="versions"></span>
+</footer>
+
+<div class="tooltip" id="tooltip" role="status" hidden></div>
+<script src="app.js"></script>
+</body>
+</html>

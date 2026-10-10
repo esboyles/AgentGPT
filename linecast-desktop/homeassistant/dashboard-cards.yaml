@@ -1,0 +1,44 @@
+# Cards for a Home Assistant dashboard. In a dashboard, choose
+# "Edit dashboard", then "Add card", then "Manual", and paste one card.
+# Replace 192.168.1.50 with your PC's address.
+#
+# The webpage cards show linecast desktop itself. They load over plain
+# http, so they show only when you open Home Assistant over http too (on
+# your home network). Over https, such as through Nabu Casa, the browser
+# blocks them; use the sensor card there instead.
+
+# ---- One card from the dashboard: weather, sun, moon, tides, sky or art ----
+type: iframe
+url: http://192.168.1.50:8765/?view=weather&bare=1
+aspect_ratio: 120%
+
+---
+# ---- linecast's own radar drawing ----
+type: iframe
+url: http://192.168.1.50:8765/?view=art&app=radar&bare=1
+aspect_ratio: 65%
+
+---
+# ---- The sensors, as a plain list (works over https too) ----
+type: entities
+title: linecast
+entities:
+  - entity: sensor.linecast_temperature
+    name: Temperature
+  - entity: sensor.linecast_condition
+    name: Conditions
+  - entity: sensor.linecast_chance_of_precipitation
+    name: Chance of precipitation
+  - entity: sensor.linecast_sunrise
+    name: Sunrise
+    format: time
+  - entity: sensor.linecast_sunset
+    name: Sunset
+    format: time
+  - entity: sensor.linecast_moon_phase
+    name: Moon
+  - entity: sensor.linecast_moon_illumination
+    name: Moon lit
+  - entity: sensor.linecast_next_tide
+    name: Next tide
+    format: time

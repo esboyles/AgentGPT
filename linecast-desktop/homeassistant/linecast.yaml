@@ -1,0 +1,137 @@
+# linecast desktop sensors for Home Assistant.
+#
+# 1. Start linecast desktop on your PC with --lan, so Home Assistant can
+#    reach it:  Start-Linecast-Desktop.bat --lan
+# 2. Replace 192.168.1.50 below with your PC's address on your network
+#    (run `ipconfig` on the PC and use its IPv4 address).
+# 3. Save this file as config/packages/linecast.yaml, and make sure your
+#    configuration.yaml loads packages:
+#
+#      homeassistant:
+#        packages: !include_dir_named packages
+#
+# 4. Restart Home Assistant (or reload "REST entities" in Developer tools).
+#
+# Every sensor below comes from one request to /api/summary every five
+# minutes. Times carry their UTC offset, so the timestamp sensors show in
+# Home Assistant's own time zone. Set the temperature unit to match the
+# units linecast uses (°F unless you started it with --metric).
+
+rest:
+  - resource: http://192.168.1.50:8765/api/summary
+    scan_interval: 300
+    timeout: 90
+    sensor:
+      # ---- Weather ----
+      - name: "linecast temperature"
+        unique_id: linecast_temperature
+        value_template: "{{ value_json.weather.temperature if value_json.weather else none }}"
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+      - name: "linecast feels like"
+        unique_id: linecast_feels_like
+        value_template: "{{ value_json.weather.feels_like if value_json.weather else none }}"
+        device_class: temperature
+        state_class: measurement
+        unit_of_measurement: "°F"
+      - name: "linecast high today"
+        unique_id: linecast_high_today
+        value_template: "{{ value_json.weather.high if value_json.weather else none }}"
+        device_class: temperature
+        unit_of_measurement: "°F"
+      - name: "linecast low today"
+        unique_id: linecast_low_today
+        value_template: "{{ value_json.weather.low if value_json.weather else none }}"
+        device_class: temperature
+        unit_of_measurement: "°F"
+      - name: "linecast condition"
+        unique_id: linecast_condition
+        value_template: "{{ value_json.weather.condition if value_json.weather else none }}"
+        icon: mdi:weather-partly-cloudy
+        json_attributes_path: "$.weather"
+        json_attributes:
+          - summary
+          - icon
+          - alerts
+          - wind_speed
+          - wind_gusts
+          - unit_wind
+      - name: "linecast humidity"
+        unique_id: linecast_humidity
+        value_template: "{{ value_json.weather.humidity if value_json.weather else none }}"
+        device_class: humidity
+        state_class: measurement
+        unit_of_measurement: "%"
+      - name: "linecast chance of precipitation"
+        unique_id: linecast_precipitation_chance
+        value_template: "{{ value_json.weather.precipitation_probability if value_json.weather else none }}"
+        icon: mdi:weather-rainy
+        unit_of_measurement: "%"
+
+      # ---- Sun ----
+      - name: "linecast sunrise"
+        unique_id: linecast_sunrise
+        value_template: "{{ value_json.sun.sunrise if value_json.sun else none }}"
+        device_class: timestamp
+      - name: "linecast sunset"
+        unique_id: linecast_sunset
+        value_template: "{{ value_json.sun.sunset if value_json.sun else none }}"
+        device_class: timestamp
+      - name: "linecast daylight"
+        unique_id: linecast_daylight
+        value_template: "{{ value_json.sun.day_length_minutes if value_json.sun else none }}"
+        device_class: duration
+        unit_of_measurement: "min"
+        json_attributes_path: "$.sun"
+        json_attributes:
+          - day_length_change_minutes
+          - solar_noon
+          - elevation
+
+      # ---- Moon ----
+      - name: "linecast moon phase"
+        unique_id: linecast_moon_phase
+        value_template: "{{ value_json.moon.phase if value_json.moon else none }}"
+        icon: mdi:moon-waxing-crescent
+        json_attributes_path: "$.moon"
+        json_attributes:
+          - age_days
+          - waxing
+          - next_full_name
+          - next_rise
+          - next_set
+          - up
+      - name: "linecast moon illumination"
+        unique_id: linecast_moon_illumination
+        value_template: "{{ value_json.moon.illumination if value_json.moon else none }}"
+        icon: mdi:brightness-3
+        unit_of_measurement: "%"
+      - name: "linecast next full moon"
+        unique_id: linecast_next_full_moon
+        value_template: "{{ value_json.moon.next_full if value_json.moon else none }}"
+        device_class: date
+
+      # ---- Tides (empty away from the coast) ----
+      - name: "linecast next tide"
+        unique_id: linecast_next_tide
+        value_template: "{{ value_json.tide.next_time if value_json.tide else none }}"
+        device_class: timestamp
+        json_attributes_path: "$.tide"
+        json_attributes:
+          - station
+          - next
+          - next_height
+          - unit
+          - rising
+          - next_high_time
+          - next_high_height
+          - next_low_time
+          - next_low_height
+      # Tide heights are in metres; use "ft" here if you start with --imperial.
+      - name: "linecast tide height"
+        unique_id: linecast_tide_height
+        value_template: "{{ value_json.tide.now_height if value_json.tide else none }}"
+        icon: mdi:waves
+        state_class: measurement
+        unit_of_measurement: "m"
