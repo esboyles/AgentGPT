@@ -1,0 +1,27 @@
+filters:
+  and:
+    - 'type == "decision"'
+views:
+  - type: table
+    name: Active decisions
+    filters:
+      and:
+        - 'status == "active"'
+    order:
+      - file.name
+      - created
+      - as_of
+      - confidence
+      - source
+    groupBy:
+      property: created
+      direction: DESC
+  - type: table
+    name: Superseded
+    filters:
+      and:
+        - 'status == "superseded"'
+    order:
+      - file.name
+      - created
+      - modified

@@ -1,0 +1,11 @@
+# Example crontab for a Linux or macOS host. `crontab -e` and adapt the path.
+# Times are local to the host; keep the host's timezone equal to the owner's.
+VAULT=/ABSOLUTE/PATH/TO/jarvis-vault
+PATH=/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin
+
+# 07:45 weekdays: morning brief (reads connectors, writes Daily/<today>.md)
+45 7 * * 1-5  cd $VAULT && scripts/run-skill.sh morning-brief sonnet
+# 22:10 daily: consolidate daily notes into memory/ and wiki/
+10 22 * * *   cd $VAULT && scripts/run-skill.sh consolidate haiku
+# 18:00 Sunday: health audit
+0 18 * * 0    cd $VAULT && scripts/run-skill.sh health-audit haiku
