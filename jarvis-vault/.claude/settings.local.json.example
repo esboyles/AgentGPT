@@ -1,0 +1,6 @@
+{
+  "autoMemoryDirectory": "/ABSOLUTE/PATH/TO/jarvis-vault/memory",
+  "enabledPlugins": {
+    "obsidian@obsidian-skills": true
+  }
+}

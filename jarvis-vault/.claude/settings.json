@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "defaultMode": "default",
+    "allow": [
+      "Bash(rg:*)",
+      "Bash(ls:*)",
+      "Bash(cat:*)",
+      "Bash(date:*)",
+      "Bash(wc:*)",
+      "Bash(obsidian:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ],
+    "ask": [
+      "Bash(mv:*)",
+      "Bash(git push:*)",
+      "Bash(git checkout:*)",
+      "Bash(git reset:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(git push --force:*)",
+      "Edit(/Archive/**)",
+      "Edit(/.obsidian/**)",
+      "Edit(/templates/**)",
+      "Edit(/.claude/settings.json)",
+      "Edit(/.claude/hooks/**)",
+      "Read(/.env)",
+      "Read(/**/*.key)",
+      "Read(/**/*.pem)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/guard-writes.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "manual|auto",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/precompact-checkpoint.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR\"/.claude/hooks/auto-commit.sh",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key><string>com.jarvis.health-audit</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/bin/bash</string>
+    <string>-lc</string>
+    <string>cd /ABSOLUTE/PATH/TO/jarvis-vault &amp;&amp; scripts/run-skill.sh health-audit haiku</string>
+  </array>
+  <key>StartCalendarInterval</key>
+  <dict><key>Weekday</key><integer>0</integer><key>Hour</key><integer>18</integer><key>Minute</key><integer>0</integer></dict>
+  <key>StandardOutPath</key><string>/tmp/jarvis-health-audit.out</string>
+  <key>StandardErrorPath</key><string>/tmp/jarvis-health-audit.err</string>
+</dict>
+</plist>
